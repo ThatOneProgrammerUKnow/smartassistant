@@ -31,7 +31,7 @@ def load():
     
 
     return [
-    Playlist("Piano Covers", "1", "spotify:playlist:2EqfHxWJsJJWon2OuPE0Gm", ["covers", "piano"]),
+    Playlist("Piano Covers", "1", "spotify:playlist:2EqfHxWJsJJWon2OuPE0Gm", ["covers", "piano", "piano covers"]),
     Playlist("Piano Blues", "2", "spotify:playlist:4dchdSr6IL2twY9EPWZtp0", ["blues"]),
     Playlist("Piano Jazz", "3", "spotify:playlist:1cGuko50vN3I4I3QndnguR", ["jazz"]),
     Playlist("Classical Piano", "4", "spotify:playlist:632WhLlq7UqkM3Qqp2xwLq", ["classical"]),
@@ -39,6 +39,7 @@ def load():
     Playlist("Mozart", "6", "spotify:playlist:5UcBffjK5Pzlo3S54jZfvz"),
     Playlist("Beethoven", "7", "spotify:playlist:303vag937UKki4PXhUGI85"),
     Playlist("Ludovico Einaudi", "8", "spotify:playlist:37i9dQZF1DWUofLlXqRWZz", ["ludovico", "einaudi"]),
+    Playlist("Top 2025 songs", "9", "spotify:playlist:37i9dQZEVXcXHWVVT0lfDq", ["2025", "top 25", "top2025", "top 2025"]),
 ]
 
 def is_valid(query):
@@ -54,7 +55,7 @@ def find(query):
     for playlist in Playlist._instances:
         if query.upper() in playlist.alias:
             return playlist
-    return "Somehting went wrong"  
+    return "Something went wrong"  
     
 def all_playlists():
     return [str(playlist) for playlist in Playlist._instances]

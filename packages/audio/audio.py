@@ -1,11 +1,13 @@
-import os
+import os, requests
 from dotenv import load_dotenv
 from elevenlabs.client import ElevenLabs
 from elevenlabs.play import play
+from io import BytesIO
 
 
 # Configuration
 PLAY_SOUNDS = True
+SPEECH_TO_TEXT = True
 
 # Initialize ElevenLabs
 load_dotenv()
@@ -14,6 +16,7 @@ elevenlabs = ElevenLabs(
 )
 
 
+#==========# Public methods #==========#
 def play_sound(text):
     if PLAY_SOUNDS:
         """Convert text to speech and play audio."""
@@ -26,3 +29,19 @@ def play_sound(text):
 
         audio_bytes = b"".join(audio_stream)
         play(audio_bytes)
+
+def get_text(filename):
+    if SPEECH_TO_TEXT:
+        with open(filename, "rb") as f:
+            audio_data = BytesIO(f.read())
+
+        transcription = elevenlabs.speech_to_text.convert(
+            file=audio_data,
+            model_id="scribe_v1", # Model to use
+            language_code="eng", # Language of the audio file. If set to None, the model will detect the language automatically.
+            diarize=True, # Whether to annotate who is speaking
+        )
+        return transcription
+
+
+    

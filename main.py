@@ -1,15 +1,21 @@
-import os, textwrap
+import os
+import sounddevice as sd
+import soundfile as sf
 from dotenv import load_dotenv
 from datetime import datetime
+
 from packages.audio.audio import play_sound
+from packages.audio.audio import get_text
 from packages.apis.weather import get_weather_today
 from packages.spotify_player.spotifyplayer import SpotifyPlayer
+
 
 #===================================================# Configuration #===================================================#
 USERNAME = "Kobus"
 EXIT_ALIAS = ["EXIT"]
 LIST_COMMANDS = ["HELP", "LIST COMMANDS"]
 LAST_WEATHER_REPORT = 10
+RECORD_DURATION = 4
 
 
 #===================================================# Initialization #===================================================#
@@ -88,13 +94,12 @@ def greet():
   weather = ""
 
   now = datetime.now()
+  hour = int(now.strftime("%H"))
 
   ## Time of day
   if now.strftime("%p") == "AM":
     time_of_day = "morning"
-
   else:
-    hour = int(now.strftime("%H"))
     time_of_day = "afternoon" if hour < 18 else "evening"
 
   # Last weather report before glbal variable (Configure at the top)
@@ -103,7 +108,14 @@ def greet():
 
   play_sound(f"Good {time_of_day}, {USERNAME}.\n{weather}")
 
-#===================# Music related #===================#
+#===================# Sound related #===================#
+def record_file(filename="input.wav", duration=RECORD_DURATION, samplerate=44100):
+    print(f"{USER_COLOR}Listening...{RESET}")
+    audio = sd.rec(int(duration * samplerate), samplerate=samplerate, channels=1)
+    sd.wait()
+    sf.write(filename, audio, samplerate)
+    print(f"{VSI_COLOR_TWO}Saved input to {filename}")
+    return filename
 
 
 
@@ -120,9 +132,11 @@ def play_music(user_choice):
             print(f"{VSI_COLOR_TWO}Playing {playlist_name}{RESET}")
 
         else:
-            os.system("cls")
             play_sound("Playlist not found")
             user_choice = input(f"{BOLD}{WARNING_COLOR}Playlist not found.{RESET}{VSI_COLOR}\n\n{playlist_options}\nYour choice: {USER_COLOR}")
+            if not user_choice:
+                user_choice = record_command()
+                user_choice = user_choice.replace(".", "")
             print(RESET)
 
 #===================================================# User input handling #===================================================#
@@ -131,12 +145,27 @@ def list_commands():
 
 def play_music_command():
     print(f"{playlist_options}")
-    play_music(input(f"Your choice:{USER_COLOR} "))
+    user_input = input(f"Your choice:{USER_COLOR} ")
+
+    if not user_input: 
+        user_input = record_command()
+        user_input = user_input.replace(".", "")
+
+    play_music(user_input)
     print(RESET)
 
 def play_playlist_command(input):
     choice = input.replace("PLAY ", "")
     play_music(choice)
+
+def record_command():
+    filename = record_file()
+    user_input = get_text(filename).text.upper()
+
+    os.system("cls")
+    print(f"{USERNAME}: {USER_COLOR}{user_input.capitalize()}{RESET}")
+
+    return user_input
     
 
 #===================================================# Main methods #===================================================#
@@ -146,8 +175,12 @@ def main_loop():
     user_input = input(f"{USERNAME}:{USER_COLOR} ").upper()
     print(RESET)
     while user_input not in EXIT_ALIAS:
-        # List commands
-        if user_input in LIST_COMMANDS:
+        # Voice commands
+        if not user_input:
+            user_input = record_command()
+
+        # Inputs
+        if any(command in user_input for command in LIST_COMMANDS):
             list_commands()
         ## Music
         # Show options and choose one
@@ -162,6 +195,7 @@ def main_loop():
             weather = get_weather_today()
             print(weather)
             play_sound(weather)
+        
 
         user_input = input(f"{USERNAME}: {USER_COLOR}").upper()
         print(RESET)

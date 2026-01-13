@@ -7,5 +7,7 @@ requires-python = ">=3.13"
 dependencies = [
     "dotenv>=0.9.9",
     "elevenlabs>=2.26.1",
+    "sounddevice>=0.5.3",
+    "soundfile>=0.13.1",
     "spotipy>=2.25.2",
 ]
