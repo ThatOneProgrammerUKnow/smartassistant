@@ -22,7 +22,6 @@ class SpotifyPlayer:
         # Global variables
         self.sp = None
         self.run_shuffle = True
-        self.printed_ready = False
 
         # Directories
         self.spotify_dir = "C:/Users/kobus/OneDrive/Desktop/Spotify.lnk"
@@ -57,7 +56,6 @@ class SpotifyPlayer:
                 redirect_uri = REDIRECT_URI,
                 scope = SCOPE
             ))
-            print("Authorization succesfull!")
             return True
         except:
             return False
@@ -67,12 +65,8 @@ class SpotifyPlayer:
     def _get_device_id(self):
         # Initial variables
         loop = True
-        printed = False
 
-        # Telling the user that we are getting their device ready
-        if self.printed_ready==False:
-            print("Getting device ready")
-            self.printed_ready = True
+        
 
         # If the authorization was succesfull
         if self._is_authorized() == True:
@@ -153,13 +147,63 @@ class SpotifyPlayer:
             print("Something went wrong")
         return True
         
+    # Pause music
+    def pause(self):
+        device_id = self._get_device_id()
+        try:
+            self.sp.pause_playback(device_id=device_id)
+        except Exception as e:
+            print(f"Cannot pause music: {e}")
 
+    # Play music
+    def play(self):
+        device_id = self._get_device_id()
+        try:
+            self.sp.start_playback(device_id=device_id)
+        except Exception as e:
+            print(f"Cannot play music: {e}")
 
     def options(self):
         if self.loaded_playlists == False:
             playlist.load()
 
         return playlist.all_playlists()
+    
+    # Volume
+    def playback_running(self):
+        pb = self.sp
+        if pb == None:
+            return False
+        return True
+
+
+    def alter_volume(self, method, amount=10):
+        device_id = self._get_device_id()
+        playback = self.sp
+        current = playback["device"]["volume_percent"]
+
+        if playback != None:
+            # Set volume
+            if method == "set":
+                self.sp.volume(amount, device_id)
+
+            # Increase volume
+            elif method == "increase":
+                new = current + amount
+                self.sp.volume(new, device_id, 100)
+
+            # Decrease volume
+            elif method == "decrease":
+                new = current - amount
+                self.sp.volume(new, device_id, 0)
+
+            
+        
+
+    
+
+    
+
         
 
     

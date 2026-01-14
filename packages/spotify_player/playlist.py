@@ -40,11 +40,13 @@ def load():
     Playlist("Beethoven", "7", "spotify:playlist:303vag937UKki4PXhUGI85"),
     Playlist("Ludovico Einaudi", "8", "spotify:playlist:37i9dQZF1DWUofLlXqRWZz", ["ludovico", "einaudi"]),
     Playlist("Top 2025 songs", "9", "spotify:playlist:37i9dQZEVXcXHWVVT0lfDq", ["2025", "top 25", "top2025", "top 2025"]),
+    Playlist("Medieval", "10", "spotify:playlist:4UucW6dxLMrTQUyZT3DVGL", ["medieval"]),
+    Playlist("Gregorian Chant", "11", "spotify:playlist:3XctrCHJS1eeV1NbGOGvD3", ["gregorian", "chant"]),
 ]
 
 def is_valid(query):
     for playlist in Playlist._instances:
-        if query.upper() in playlist.alias or query.upper() == 'RANDOM':
+        if any(a in query.upper() for a in playlist.alias)  or query.upper() == 'RANDOM':
             return True
     return False
 
@@ -53,7 +55,7 @@ def find(query):
         return random.choice(Playlist._instances)
     
     for playlist in Playlist._instances:
-        if query.upper() in playlist.alias:
+        if any(a in query.upper() for a in playlist.alias):
             return playlist
     return "Something went wrong"  
     
