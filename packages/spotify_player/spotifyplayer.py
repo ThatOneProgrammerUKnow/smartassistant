@@ -38,7 +38,7 @@ class SpotifyPlayer:
 
     #===# Getting spotify ready #===#
     # Authorising sp
-    def _is_authorized(self):
+    def _authorize(self):
         # Load and get enviroment variables 
         if self.env_loaded == False:
             self._load_env()
@@ -69,7 +69,7 @@ class SpotifyPlayer:
         
 
         # If the authorization was succesfull
-        if self._is_authorized() == True:
+        if self.sp:
             while loop == True:
                 devices = self.sp.devices()
 
@@ -84,7 +84,7 @@ class SpotifyPlayer:
                     print("No active devices were found.\nIf spotify is already open, please activate your device (Play and pause any song)")
                     self._wait(15, "spotify")
         else:
-            print("Unfortunatly the spotify aythorization has failed.\n\nI will not be able to play spotify for you. ")
+            self._authorize()
 
     #===# Helper methods #====#
     def _open_spotify(self):
@@ -149,6 +149,7 @@ class SpotifyPlayer:
         
     # Pause music
     def pause(self):
+        if not self.sp: self._authorize
         device_id = self._get_device_id()
         try:
             self.sp.pause_playback(device_id=device_id)
@@ -157,6 +158,8 @@ class SpotifyPlayer:
 
     # Play music
     def play(self):
+        if not self.sp: self._authorize
+
         device_id = self._get_device_id()
         try:
             self.sp.start_playback(device_id=device_id)
@@ -171,31 +174,47 @@ class SpotifyPlayer:
     
     # Volume
     def playback_running(self):
-        pb = self.sp
-        if pb == None:
+        if not self.sp: self._authorize()
+        
+        pb = self.sp.current_playback()
+
+        if pb is None:
             return False
-        return True
+
+        return pb.get("is_playing", False)
 
 
     def alter_volume(self, method, amount=10):
+        if not self.sp:
+            self._authorize()
+
         device_id = self._get_device_id()
-        playback = self.sp
-        current = playback["device"]["volume_percent"]
+        playback = self.sp.current_playback()
 
-        if playback != None:
-            # Set volume
-            if method == "set":
-                self.sp.volume(amount, device_id)
+        if not playback or "device" not in playback:
+            print("No active playback/device found. Cannot change volume.")
+            return False
 
-            # Increase volume
-            elif method == "increase":
-                new = current + amount
-                self.sp.volume(new, device_id, 100)
+        current = playback["device"].get("volume_percent", 0)
 
-            # Decrease volume
-            elif method == "decrease":
-                new = current - amount
-                self.sp.volume(new, device_id, 0)
+        # Determine new volume
+        if method == "set":
+            new = amount
+        elif method == "increase":
+            new = current + amount
+        elif method == "decrease":
+            new = current - amount
+        else:
+            print(f"Unknown volume method: {method}")
+            return False
+
+        new = int(max(0, min(100, new)))
+        try:
+            self.sp.volume(new, device_id)
+            return True
+        except Exception as e:
+            print(f"Cannot change volume: {e}")
+            return False
 
             
         

@@ -51,6 +51,9 @@ def load():
     #=====# Websites #=====#
     ## Google Programs
     Program("Google Calender", "https://calendar.google.com/calendar/u/0/r", ["Calender"]),
+
+    Program("Youtube", "https://www.youtube.com/"),
+    Program("Youtube History", "https://www.youtube.com/feed/history"),
     
     ## Shortcuts
     Program("Bible", "https://www.bible.com/bible", ["bible", "youversion"]),

@@ -9,6 +9,8 @@ from packages.audio.audio import get_text
 from packages.apis.weather import get_weather_today
 from packages.spotify_player.spotifyplayer import SpotifyPlayer
 from packages.open import openmanager
+from word2number import w2n
+from number_parser import parse_number
 
 
 #===================================================# Configuration #===================================================#
@@ -171,14 +173,33 @@ def unpause_music():
 
 def increase_volume():
     if music.playback_running():
+        print(f"{SUCCESS_COLOR}Increasing volume{RESET}")
         music.alter_volume("increase")
 
 def decrease_volume():
     if music.playback_running():
+        print(f"{SUCCESS_COLOR}Decreasing volume{RESET}")
         music.alter_volume("decrease")
 
 def set_volume(user_input):
     if music.playback_running():
+        # Get integer
+        digits = [int(s) for s in user_input.split() if s.isdigit()]
+
+        # If there is a number
+        if digits:
+            amount = digits[0]
+
+        # If there are no numbers
+        else:
+            try:
+                number = parse_number(user_input)
+                amount = w2n.word_to_num(number)
+            except ValueError:
+                print(f"{WARNING_COLOR}No valid numbers found{RESET}")
+            
+
+        print(f"{SUCCESS_COLOR}Changing volume{RESET}")
         music.alter_volume("set", amount)
 
     
