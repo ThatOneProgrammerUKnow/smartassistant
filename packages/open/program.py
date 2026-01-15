@@ -33,7 +33,7 @@ def load():
     Program("Logitec G HUB", "C:/ProgramData/Microsoft/Windows/Start Menu/Programs/Logi/Logitech G HUB.lnk", ["g hub", "logitec", "mouse app", "mouse settings"]),
     Program("Discord", "C:/Users/kobus/OneDrive/Desktop/Discord.lnk"),
     Program("Google", "C:/Program Files/Google/Chrome/Application/chrome.exe", ["chrome"]),
-    Program("Visual Studios Code", "C:/Users/kobus/OneDrive/Desktop/Visual Studio Code.lnk", ["vs code", "visual studios"]),
+    Program("Visual Studio Code", "C:/Users/kobus/OneDrive/Desktop/Visual Studio Code.lnk", ["vs code", "visual studio", "visual studio's"]),
     Program("Docker Desktop", "C:/Users/kobus/OneDrive/Desktop/Docker Desktop.lnk", ["docker"]),
     Program("Android Studios", "C:/Users/kobus/OneDrive/Desktop/Android Studio.lnk"),
     Program("Fusion 360", "C:/Users/kobus/OneDrive/Desktop/Autodesk Fusion.lnk", ["fusion"]),

@@ -22,6 +22,7 @@ LAST_WEATHER_REPORT = 10
 RECORD_DURATION = 4
 
 
+
 #===================================================# Initialization #===================================================#
 # Basic styles
 RESET = "\033[0m"
@@ -193,10 +194,14 @@ def set_volume(user_input):
         # If there are no numbers
         else:
             try:
-                number = parse_number(user_input)
+                cleaned_data = user_input.lower().replace("-", " ")
+                cleaned_data = user_input.lower().replace(".", "")
+
+                number = parse_number(cleaned_data)
                 amount = w2n.word_to_num(number)
             except ValueError:
                 print(f"{WARNING_COLOR}No valid numbers found{RESET}")
+                return
             
 
         print(f"{SUCCESS_COLOR}Changing volume{RESET}")
@@ -266,6 +271,12 @@ def open_program(input):
 
 
 #===================================================# Main method #===================================================#
+#=====# Aliases for calling methods #=====#
+UNPAUSE_MUSIC = ["PLAY MUSIC", "UNPAUSE MUSIC"]
+PAUSE_MUSIC = ["PAUSE MUSIC"]
+START_MUSIC = ["MUSIC OPTIONS", "AVAILABLE MUSIC", "START MUSIC", "PLAY SOME MUSIC", "START PLAYING MUSIC"]
+
+#=====# Method #=====#
 def main_loop():
     os.system("cls")
     print(opening_text)
@@ -285,14 +296,14 @@ def main_loop():
         
         
         # Pause and play
-        elif "UNPAUSE MUSIC" in user_input:
+        elif any(a in user_input for a in UNPAUSE_MUSIC):
             unpause_music()
 
-        elif "PAUSE MUSIC" in user_input:
+        elif any(a in user_input for a in UNPAUSE_MUSIC):
             pause_music()
 
         # Specific playlist
-        elif "PLAY MUSIC" in user_input:
+        elif any(a in user_input for a in START_MUSIC):
             play_music_command()
 
         elif "PLAY" in user_input:
