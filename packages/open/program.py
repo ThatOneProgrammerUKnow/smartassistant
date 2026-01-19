@@ -45,12 +45,12 @@ def load():
     
 
     #=====# Files #=====#
-    Program("Timesheet", "C:/Users/kobus/OneDrive/Desktop/Kobus/VSI/Timesheet.xlsx", ["timesheet", "time sheet"]),
+    Program("Timesheet", "C:/Users/kobus/OneDrive/Desktop/Kobus/VSI/2026.xlsx", ["timesheet", "time sheet"]),
     Program("Desktop", "C:/Users/kobus/OneDrive/Desktop", ["file explorer", "my files"]),
 
     #=====# Websites #=====#
     ## Google Programs
-    Program("Google Calender", "https://calendar.google.com/calendar/u/0/r", ["Calender"]),
+    Program("Google Calender", "https://calendar.google.com/calendar/u/0/r", ["calender", "open calender"]),
 
     Program("Youtube", "https://www.youtube.com/"),
     Program("Youtube History", "https://www.youtube.com/feed/history"),
@@ -79,6 +79,7 @@ def load():
     Program("Amazon", "https://www.amazon.co.za/?tag=zatxtabkgode-21&ref=nav_signin&adgrpid=176086901168&hvpone=&hvptwo=&hvadid=721507624979&hvpos=&hvnetw=g&hvrand=17970700248363669328&hvqmt=e&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9195388&hvtargid=kwd-360364908397&hydadcr=9972_2328982&mcid=6799fe1a2d4d3f7d8d5f50780aa631c2&language=en_ZA&gad_source=1"),
 
     ## Other
+    Program("Smart Assistant", "C:/Users/kobus/OneDrive/Desktop/Kobus/Programming/Scripting/Batch/startup.bat", ["vsi", "assistant", "reload assistant", "reload smart assistant", "restart assistant", "restart smartassistant"])
 ]
 
 

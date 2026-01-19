@@ -1,6 +1,7 @@
-import os
+import os, sys, time, threading, subprocess, ctypes
 import sounddevice as sd
 import soundfile as sf
+
 from dotenv import load_dotenv
 from datetime import datetime
 
@@ -20,6 +21,10 @@ BACK_ALIAS = ["BACK"]
 LIST_COMMANDS = ["HELP", "LIST COMMANDS"]
 LAST_WEATHER_REPORT = 10
 RECORD_DURATION = 4
+
+SHUT_DOWN_HOUR = 22
+SHUT_DOWN_MINUTE = 00
+
 
 
 
@@ -94,26 +99,96 @@ help_text = f'''{VSI_COLOR}
 ## Playlist options
 playlist_options = f"{VSI_COLOR}Your playlist options are:\n\n{"\n".join(music.options())}\n{RESET}"
 
+#===================================================# Ascync #===================================================#
+# Shut down
+def shutdown():
+    subprocess.run(
+    ["shutdown", "/s", "/t", "15"],
+    shell=False
+    )
+
+    # Give apps time to respond
+    time.sleep(10)
+
+    # Step 2: Force-close remaining USER processes only
+    subprocess.run(
+        'taskkill /F /FI "USERNAME eq %USERNAME%"',
+        shell=True
+    )
+
+    # Step 3: Immediate forced shutdown
+    os.system("shutdown /s /f /t 0")
+
+# Confirn shut down - Last chance
+def confirm_shutdown():
+    result = ctypes.windll.user32.MessageBoxW(
+        0,
+        "PC will shut down now.\nPress Cancel to abort.",
+        "Shutdown Warning",
+        1
+    )
+    return result == 1  # OK
+
+
+# Countdown to shutdown
+def shutdown_countdown():
+    countdown = 10
+    time.sleep(1)
+    countdown -= 1
+    print(WARNING_COLOR)
+
+    os.system("cls")
+    play_sound(f"Shutting down in {countdown}") # Audio
+
+    while countdown > 0:
+        if countdown == 5: print(ERROR_COLOR)
+        os.system("cls")
+        play_sound(f"{countdown}") # Audio
+        print(f"Shutting down in {countdown}")
+        time.sleep(1)
+        countdown -= 1
+
+    # Confirmation
+    if not confirm_shutdown():
+        print("Shutdown cancelled")
+        play_sound("Shutdown cancelled")
+        return
+    
+    shutdown()
+
+def time_watcher():
+    while True:
+        now = datetime.now()
+
+        if now.hour == SHUT_DOWN_HOUR and now.minute == SHUT_DOWN_MINUTE:
+            shutdown_countdown()
+            time.sleep(60)  # prevent repeated calls
+
+        time.sleep(1)
+
+threading.Thread(target=time_watcher, daemon=True).start()
+
 
 #===================================================# Helper methods #===================================================#
 #===================# Conversational #===================#
 def greet():
-  weather = ""
+    weather = ""
 
-  now = datetime.now()
-  hour = int(now.strftime("%H"))
+    now = datetime.now()
+    hour = int(now.strftime("%H"))
 
-  ## Time of day
-  if now.strftime("%p") == "AM":
-    time_of_day = "morning"
-  else:
-    time_of_day = "afternoon" if hour < 18 else "evening"
+    ## Time of day
+    if now.strftime("%p") == "AM":
+        time_of_day = "morning"
+    else:
+        time_of_day = "afternoon" if hour < 18 else "evening"
 
-  # Last weather report before glbal variable (Configure at the top)
-  if hour < LAST_WEATHER_REPORT:
-       weather = get_weather_today()
+    # Last weather report before glbal variable (Configure at the top)
+    if hour < LAST_WEATHER_REPORT:
+        weather = get_weather_today()
 
-  play_sound(f"Good {time_of_day}, {USERNAME}.\n{weather}")
+    GREETING_MESSAGE = f"Good {time_of_day}, {USERNAME}.\n{weather}"
+    play_sound(GREETING_MESSAGE)
 
 #===================# Sound related #===================#
 def record_file(filename="input.wav", duration=RECORD_DURATION, samplerate=44100):
@@ -252,16 +327,22 @@ def list_programs():
     print(RESET)
 
 # Open a program or website url
-def open_program(input):
-    program = input.replace("OPEN ", "")
+def open_program(program):
 
     # If program objext exists
     if openmanager.exists(program): 
         print(SUCCESS_COLOR)
-        print(f"Opening {openmanager.get_name(program)}")
-        play_sound(f"Opening {openmanager.get_name(program)}")
-        openmanager.open(program)
+        restart = True if program == "RESTART ASSISTANT" else False # If system is restarting
+
+        message = "Restarting" if restart else "Opening" # Message
+        play_sound(f"{message} {openmanager.get_name(program)}") # Play message
+        print(f"{message} {openmanager.get_name(program)}")
+        openmanager.open(program) # Opening program
         print(RESET)
+
+
+        if restart: sys.exit()
+        print(f"{SUCCESS_COLOR}Succsesfully opened{RESET}\n")
 
     # If program object does not exist
     else:
@@ -272,9 +353,11 @@ def open_program(input):
 
 #===================================================# Main method #===================================================#
 #=====# Aliases for calling methods #=====#
-UNPAUSE_MUSIC = ["PLAY MUSIC", "UNPAUSE MUSIC"]
+UNPAUSE_MUSIC = ["UNPAUSE MUSIC"]
 PAUSE_MUSIC = ["PAUSE MUSIC"]
-START_MUSIC = ["MUSIC OPTIONS", "AVAILABLE MUSIC", "START MUSIC", "PLAY SOME MUSIC", "START PLAYING MUSIC"]
+START_MUSIC = ["MUSIC OPTIONS", "AVAILABLE MUSIC", "START MUSIC", "PLAY SOME MUSIC", "START PLAYING MUSIC", "PLAY MUSIC"]
+
+RELOAD_ASSISTANT = ["RELOAD ASSISTANT", "RESTART ASSISTANT", "RELOAD SMART ASSISTANT", "RESTART SMART ASSISTANT"]
 
 #=====# Method #=====#
 def main_loop():
@@ -299,7 +382,7 @@ def main_loop():
         elif any(a in user_input for a in UNPAUSE_MUSIC):
             unpause_music()
 
-        elif any(a in user_input for a in UNPAUSE_MUSIC):
+        elif any(a in user_input for a in PAUSE_MUSIC):
             pause_music()
 
         # Specific playlist
@@ -330,14 +413,10 @@ def main_loop():
             list_programs()
 
         elif "OPEN" in user_input:
-            print("Open")
             open_program(user_input)
 
-
-        
-            
-        
-        
+        elif any(a in user_input for a in RELOAD_ASSISTANT):
+            open_program("RESTART ASSISTANT")
 
         user_input = input(f"{USERNAME}: {USER_COLOR}").upper()
         print(RESET)

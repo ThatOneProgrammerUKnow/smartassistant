@@ -31,7 +31,7 @@ def load():
     
 
     return [
-    Playlist("Piano Covers", "1", "spotify:playlist:2EqfHxWJsJJWon2OuPE0Gm", ["covers", "piano", "piano covers"]),
+    Playlist("Piano Covers", "1", "spotify:playlist:2EqfHxWJsJJWon2OuPE0Gm", ["covers"]),
     Playlist("Piano Blues", "2", "spotify:playlist:4dchdSr6IL2twY9EPWZtp0", ["blues"]),
     Playlist("Piano Jazz", "3", "spotify:playlist:1cGuko50vN3I4I3QndnguR", ["jazz"]),
     Playlist("Classical Piano", "4", "spotify:playlist:632WhLlq7UqkM3Qqp2xwLq", ["classical"]),
