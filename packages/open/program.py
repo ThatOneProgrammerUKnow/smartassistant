@@ -58,7 +58,7 @@ def load():
     ## Shortcuts
     Program("Bible", "https://www.bible.com/bible", ["bible", "youversion"]),
     Program("Chess", "https://www.chess.com/"),
-    Program("CTU Student Campus online", "https://ctu.campusmanager.co.za/portal/student-home.php", ["student website", "student dashboard", "student faculty"]),
+    Program("CTU Student Campus online", "https://ctu.campusmanager.co.za/portal/student-home.php", ["student website", "student dashboard", "student faculty", "ctu"]),
     Program("Udemy", "https://www.udemy.com/?utm_source=adwords-brand&utm_medium=udemyads&utm_campaign=Brand-Udemy_la.EN_cc.ROW&campaigntype=Search&portfolio=BrandDirect&language=EN&product=Course&test=&audience=Keyword&topic=&priority=&utm_content=deal4584&utm_term=_._ag_80315195513_._ad_535757779892_._kw_udemy_._de_c_._dm__._pl__._ti_kwd-296956216253_._li_1028743_._pd__._&matchtype=b&gad_source=1&gclid=CjwKCAiAm-67BhBlEiwAEVftNvzvrWw2SQ5SlnvKbRSdB0OuKoyNnXHiRQsdNbQl0THnWXopLkHB3xoCJrMQAvD_BwE"),
     Program("Kindle", "https://read.amazon.com/kindle-library"),
     Program("Trello", "https://trello.com/?campaign=18422680946&adgroup=142052239375&targetid=kwd-3609071522&matchtype=e&network=g&device=c&device_model=&creative=672183050319&keyword=trello&placement=&target=&ds_eid=700000001557344&ds_e1=GOOGLE&gad_source=1&gad_campaignid=18422680946&gbraid=0AAAAADMO9Yh1cY34d2_Lr3GNrUSKscXSn&gclid=Cj0KCQjwotDBBhCQARIsAG5pinNmITRKD1VNC9_xQAoZAnqbjCG-sWHtIJwfYVsqwVfnbGfaenbFR7waAn_QEALw_wcB"),

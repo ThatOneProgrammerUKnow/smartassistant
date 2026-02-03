@@ -6,8 +6,8 @@ from io import BytesIO
 
 
 # Configuration
-PLAY_SOUNDS = False
-SPEECH_TO_TEXT = False
+PLAY_SOUNDS = True
+SPEECH_TO_TEXT = True
 
 # Initialize ElevenLabs
 load_dotenv()

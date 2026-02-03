@@ -20,7 +20,6 @@ def get_weather_today():
             f"Today, the skies are {data['weather'][0]['main']}.\n"
             f"The temperature is now {data['main']['temp']} degrees celsius.\n"
             f"The maximum temperature will be {data['main']['temp_max']} and the minimum temperature will be {data['main']['temp_min']}.\n"
-            f"The wind speed is {data['wind']['speed']} kilometres per hour.\n"
         )
         return weather_str
     else:
