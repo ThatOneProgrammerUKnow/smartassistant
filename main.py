@@ -10,8 +10,8 @@ from packages.audio.audio import get_text
 from packages.apis.weather import get_weather_today
 from packages.spotify_player.spotifyplayer import SpotifyPlayer
 from packages.open import openmanager
-from word2number import w2n
-from number_parser import parse_number
+from packages.add_ons.helper_methods import extract_number
+
 
 
 #===================================================# Configuration #===================================================#
@@ -22,8 +22,20 @@ LIST_COMMANDS = ["HELP", "LIST COMMANDS"]
 LAST_WEATHER_REPORT = 8
 RECORD_DURATION = 4
 
+# Shut down
+SHUT_DOWN = False
 SHUT_DOWN_HOUR = 22
 SHUT_DOWN_MINUTE = 00
+
+# ALarm
+ALARM = True
+ALARM_HOUR = 22
+ALARM_MINUTE = 25
+ALARM_THREAD = None
+
+
+
+
 
 
 
@@ -100,6 +112,7 @@ help_text = f'''{VSI_COLOR}
 playlist_options = f"{VSI_COLOR}Your playlist options are:\n\n{"\n".join(music.options())}\n{RESET}"
 
 #===================================================# Ascync #===================================================#
+#====================# Shutting down #====================#
 # Shut down
 def shutdown():
     subprocess.run(
@@ -156,22 +169,53 @@ def shutdown_countdown():
     
     shutdown()
 
-def time_watcher():
-    while True:
+#====================# Alarm #====================#
+def alarm():
+    # Wait for alarm to go off
+    wake_up = False
+    while not wake_up:
         now = datetime.now()
-
-        if now.hour == SHUT_DOWN_HOUR and now.minute == SHUT_DOWN_MINUTE:
-            shutdown_countdown()
-            time.sleep(60)  # prevent repeated calls
-
+        if now.hour == ALARM_HOUR and now.minute == ALARM_MINUTE:
+            wake_up = True
+    
+    # Alarm
+    '''
+    When the alarm goes of the following happens:
+    1. Your "man of steel" playlist gets started at volume 30.
+    2. You get greeted with the weather report for the day.
+    3. Volume gets boosted to 100%
+    '''
+    music.play_playlist("wake up")
+    music.alter_volume("set", 50)
+    greet("wake_up")
+    for counter in range(5, 10):
+        music.alter_volume("increase", 10)
         time.sleep(1)
+    
 
-threading.Thread(target=time_watcher, daemon=True).start()
+#====================# Time watcher #====================#
+'''def time_watcher():
+    while True:
+
+        def time_is(hour, minute):
+            now = datetime.now()
+            return now.hour == hour and now.minute == minute
+
+        if SHUT_DOWN:
+            if time_is(SHUT_DOWN_HOUR, SHUT_DOWN_MINUTE):
+                shutdown_countdown()
+                time.sleep(60)  # prevent repeated calls
+        elif ALARM:
+            if time_is(ALARM_HOUR, ALARM_MINUTE):
+                alarm()
+        time.sleep(1)'''
+
+
 
 
 #===================================================# Helper methods #===================================================#
 #===================# Conversational #===================#
-def greet():
+def greet(message):
     weather = ""
 
     now = datetime.now()
@@ -187,7 +231,18 @@ def greet():
     if hour < LAST_WEATHER_REPORT:
         weather = get_weather_today()
 
-    GREETING_MESSAGE = f"Good {time_of_day}, {USERNAME}.\n{weather}"
+    if message == "login":
+        GREETING_MESSAGE = f"Good {time_of_day}, {USERNAME}.\n{weather}"
+    elif message == "wake_up":
+        GREETING_MESSAGE = f'''
+        Good {time_of_day}, {USERNAME}, I hope you slept well. It is time to get up. 
+        Think of the man you want to be. Dissaplined, hard working. \n\nNow get that bottom up and be than man.
+        {weather}
+        '''
+    
+
+
+    
     play_sound(GREETING_MESSAGE)
 
 #===================# Sound related #===================#
@@ -259,28 +314,12 @@ def decrease_volume():
 
 def set_volume(user_input):
     if music.playback_running():
-        # Get integer
-        digits = [int(s) for s in user_input.split() if s.isdigit()]
-
-        # If there is a number
-        if digits:
-            amount = digits[0]
-
-        # If there are no numbers
-        else:
-            try:
-                cleaned_data = user_input.lower().replace("-", " ")
-                cleaned_data = user_input.lower().replace(".", "")
-
-                number = parse_number(cleaned_data)
-                amount = w2n.word_to_num(number)
-            except ValueError:
-                print(f"{WARNING_COLOR}No valid numbers found{RESET}")
-                return
-            
-
-        print(f"{SUCCESS_COLOR}Changing volume{RESET}")
-        music.alter_volume("set", amount)
+        try:
+            amount = extract_number(user_input)
+            print(f"{SUCCESS_COLOR}Changing volume{RESET}")
+            music.alter_volume("set", amount)
+        except ValueError:
+            print(f"{WARNING_COLOR}No valid numbers found{RESET}")
 
     
 
@@ -350,6 +389,51 @@ def open_program(program):
         print(f"{program} not found")
         print(RESET)
 
+#=====# Time related #=====#
+def set_alarm(user_input):
+    global ALARM_HOUR, ALARM_MINUTE, ALARM_THREAD
+    first_loop = True
+    while True:
+        try:
+            # Check if input contains colon
+            if ":" not in user_input:
+                raise ValueError("Time format must be hh:mm")
+            
+            parts = user_input.split(":")
+            if len(parts) != 2:
+                raise ValueError("Time format must be hh:mm")
+            
+            hour = int(parts[0].strip())
+            minute = int(parts[1].strip())
+            
+            if not (0 <= hour <= 23 and 0 <= minute <= 59):
+                raise ValueError("Invalid time range")
+            
+            ALARM_HOUR = hour
+            ALARM_MINUTE = minute
+            formatted_time = f"{hour:02d}:{minute:02d}"
+            
+            # Kill existing alarm thread if it exists
+            if ALARM_THREAD is not None and ALARM_THREAD.is_alive():
+                print(f"{WARNING_COLOR}Replacing previous alarm{RESET}")
+            
+            # Start new alarm thread
+            ALARM_THREAD = threading.Thread(target=alarm, daemon=True)
+            ALARM_THREAD.start()
+            print(f"{SUCCESS_COLOR}Alarm set for {formatted_time}{RESET}")
+            play_sound(f"Alarm set for {formatted_time}")
+            break
+            
+        except (ValueError, IndexError):
+            if first_loop:
+                print(f"{VSI_COLOR}Set alarm in the format hh:mm (e.g., 08:30){RESET}")
+            else:
+                print(f"{WARNING_COLOR}Invalid time format. Please use hh:mm (e.g., 08:30){RESET}")
+            user_input = input(f"Enter alarm time:{USER_COLOR} ")
+            if not user_input:
+                user_input = record_command()
+            print(RESET)
+
 
 #===================================================# Main method #===================================================#
 #=====# Aliases for calling methods #=====#
@@ -357,7 +441,9 @@ UNPAUSE_MUSIC = ["UNPAUSE MUSIC"]
 PAUSE_MUSIC = ["PAUSE MUSIC"]
 START_MUSIC = ["MUSIC OPTIONS", "AVAILABLE MUSIC", "START MUSIC", "PLAY SOME MUSIC", "START PLAYING MUSIC", "PLAY MUSIC"]
 
-RELOAD_ASSISTANT = ["RELOAD ASSISTANT", "RESTART ASSISTANT", "RELOAD SMART ASSISTANT", "RESTART SMART ASSISTANT"]
+
+RELOAD_ASSISTANT = ["RELOAD ASSISTANT", "RESTART ASSISTANT", "RELOAD SMART ASSISTANT", "RESTART SMART ASSISTANT", "RESTART"]
+SET_ALARM = ["SET ALARM"]
 
 #=====# Method #=====#
 def main_loop():
@@ -418,14 +504,17 @@ def main_loop():
         elif any(a in user_input for a in RELOAD_ASSISTANT):
             open_program("RESTART ASSISTANT")
 
+        #=====# Alarm #=====#
+        elif any(a in user_input for a in SET_ALARM):
+            set_alarm(user_input)
         user_input = input(f"{USERNAME}: {USER_COLOR}").upper()
         print(RESET)
         os.system("cls")
     
 
 def main():
-  greet()
-  main_loop()
+    greet("login")
+    main_loop()
 
 if __name__ == "__main__":
   main()
