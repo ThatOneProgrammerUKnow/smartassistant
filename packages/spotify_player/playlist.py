@@ -42,6 +42,7 @@ def load():
     Playlist("Top 2025 songs", "9", "spotify:playlist:37i9dQZEVXcXHWVVT0lfDq", ["2025", "top 25", "top2025", "top 2025"]),
     Playlist("Medieval", "10", "spotify:playlist:4UucW6dxLMrTQUyZT3DVGL", ["medieval"]),
     Playlist("Gregorian Chant", "11", "spotify:playlist:3XctrCHJS1eeV1NbGOGvD3", ["gregorian", "chant"]),
+    Playlist("Man of steel", "12", "spotify:playlist:3eRgbNnzPFTWvbOxjFYxsN", ["upbeat", "wake up", "motivating"]),
 ]
 
 def is_valid(query):
